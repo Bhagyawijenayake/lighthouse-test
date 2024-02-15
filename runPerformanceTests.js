@@ -3,36 +3,33 @@
 const execSync = require("child_process").execSync;
 const ports = require("./json/listOfPorts.json");
 
-let run = process.argv[2];
-let path = "";
 const customizations = '--quiet --chrome-flags="--headless --only-categories=performance --output=csv --output-path=./lighthouse/"';
-let runs = 0;
-const runLimit = 30;
+const totalRuns = 10; // Change totalRuns to 10
 
-do {
+for (let run = 0; run < totalRuns; run++) {
+  console.log(`Running performance test ${run + 1}`);
+
   for (const port of ports) {
-    console.log(`Running performance test ${runs + 1}`);
-
+    let path = "";
+    
     // Determine the path based on the port and run number
     if (port === "8081") {
-      path = `react/react${Math.floor(run / 2) + 1}`;
+      path = `react/react${Math.floor(run / 4) + 1}`;
     } else if (port === "8082") {
-      path = `angular/angular${Math.floor(run / 2) + 1}`;
+      path = `angular/angular${Math.floor(run / 4) + 1}`;
+    } else if (port === "8083") {
+      path = `vue/vue${Math.floor(run / 4) + 1}`;
     } else {
-      path = `vanilla/vanilla${Math.floor(run / 2) + 1}`;
+      path = `vanilla/vanilla${Math.floor(run / 4) + 1}`;
     }
 
     try {
       execSync(`lighthouse http://localhost:${port} ${customizations}${path}.csv`);
+      console.log(`Performance test ${run + 1} for port ${port} finished`);
     } catch (err) {
-      console.log(`Performance test ${runs + 1} failed`);
-      break;
+      console.log(`Performance test ${run + 1} for port ${port} failed`);
     }
-
-    console.log(`Finished running performance test ${runs + 1}`);
-    runs++;
-    run++;
   }
-} while (runs < runLimit);
+}
 
 console.log("All finished");
